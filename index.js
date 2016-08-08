@@ -21,5 +21,23 @@ Observable.
   map(x => x * 10).
   forEach(x => console.log(x));
 
+  // range starts form a value, for a number of values
+var source = Rx.Observable
+  .range(10, 2)
+  .flatMap(function (x) {
+    return Rx.Observable.range(x, 3);
+  });
+
+var subscription = source.subscribe(
+  function (x) {
+    console.log('Next: ' + x);
+  },
+  function (err) {
+    console.log('Error: ' + err);
+  },
+  function () {
+    console.log('Completed');
+  });
+
 
 
