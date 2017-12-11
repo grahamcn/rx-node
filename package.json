@@ -4,6 +4,9 @@
   "description": "Rx Playground",
   "main": "index.js",
   "dependencies": {
+    "chai": "^4.1.2",
+    "isomorphic-fetch": "^2.2.1",
+    "mocha": "^4.0.1",
     "rxjs": "^5.5.5"
   },
   "devDependencies": {},
