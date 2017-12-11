@@ -1,5 +1,4 @@
 const {Observable} = require('rxjs')
-require('rxjs/add/operator/zip')
 
 const retryStrategy = error$ =>
 	Observable.zip(
