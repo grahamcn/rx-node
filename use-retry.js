@@ -8,9 +8,6 @@ Observable
 		Observable.from(
 			fetch('http://www.swa1pi.co/api/people')
 				.then(res => {
-					if (res.status >= 400) {
-						throw new Error("Bad response from server")
-					}
 					return res.json();
 				})
 			)
@@ -19,7 +16,7 @@ Observable
 	.catch(e =>
 		Observable.of({
 			error: true,
-			message: '404'
+			message: e.message
 		})
 	)
 	.subscribe(console.log)
