@@ -1,7 +1,7 @@
-import {Scheduler} from '../Scheduler';
-import {Observable} from '../Observable';
-import {Subscriber} from '../Subscriber';
-import {TeardownLogic} from '../Subscription';
+import { IScheduler } from '../Scheduler';
+import { Observable } from '../Observable';
+import { Subscriber } from '../Subscriber';
+import { TeardownLogic } from '../Subscription';
 
 /**
  * We need this JSDoc comment for affecting ESDoc.
@@ -9,7 +9,7 @@ import {TeardownLogic} from '../Subscription';
  * @hide true
  */
 export class ScalarObservable<T> extends Observable<T> {
-  static create<T>(value: T, scheduler?: Scheduler): ScalarObservable<T> {
+  static create<T>(value: T, scheduler?: IScheduler): ScalarObservable<T> {
     return new ScalarObservable(value, scheduler);
   }
 
@@ -22,7 +22,7 @@ export class ScalarObservable<T> extends Observable<T> {
     }
 
     subscriber.next(value);
-    if (subscriber.isUnsubscribed) {
+    if (subscriber.closed) {
       return;
     }
 
@@ -32,7 +32,7 @@ export class ScalarObservable<T> extends Observable<T> {
 
   _isScalar: boolean = true;
 
-  constructor(public value: T, private scheduler?: Scheduler) {
+  constructor(public value: T, private scheduler?: IScheduler) {
     super();
     if (scheduler) {
       this._isScalar = false;
@@ -49,7 +49,7 @@ export class ScalarObservable<T> extends Observable<T> {
       });
     } else {
       subscriber.next(value);
-      if (!subscriber.isUnsubscribed) {
+      if (!subscriber.closed) {
         subscriber.complete();
       }
     }

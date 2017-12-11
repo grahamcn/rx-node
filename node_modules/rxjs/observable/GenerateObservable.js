@@ -66,7 +66,7 @@ var GenerateObservable = (function (_super) {
                 return;
             }
             subscriber.next(value);
-            if (subscriber.isUnsubscribed) {
+            if (subscriber.closed) {
                 break;
             }
             try {
@@ -80,7 +80,7 @@ var GenerateObservable = (function (_super) {
     };
     GenerateObservable.dispatch = function (state) {
         var subscriber = state.subscriber, condition = state.condition;
-        if (subscriber.isUnsubscribed) {
+        if (subscriber.closed) {
             return;
         }
         if (state.needIterate) {
@@ -108,7 +108,7 @@ var GenerateObservable = (function (_super) {
                 subscriber.complete();
                 return;
             }
-            if (subscriber.isUnsubscribed) {
+            if (subscriber.closed) {
                 return;
             }
         }
@@ -120,11 +120,11 @@ var GenerateObservable = (function (_super) {
             subscriber.error(err);
             return;
         }
-        if (subscriber.isUnsubscribed) {
+        if (subscriber.closed) {
             return;
         }
         subscriber.next(value);
-        if (subscriber.isUnsubscribed) {
+        if (subscriber.closed) {
             return;
         }
         return this.schedule(state);

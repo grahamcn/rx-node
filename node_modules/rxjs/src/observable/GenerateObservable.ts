@@ -1,10 +1,9 @@
-import {Observable} from '../Observable' ;
-import {Scheduler} from '../Scheduler';
-import {Subscriber} from '../Subscriber';
-import {Subscription} from '../Subscription';
-import {Action} from '../scheduler/Action';
-
-import {isScheduler} from '../util/isScheduler';
+import { IScheduler } from '../Scheduler';
+import { Action } from '../scheduler/Action';
+import { Observable } from '../Observable' ;
+import { Subscriber } from '../Subscriber';
+import { Subscription } from '../Subscription';
+import { isScheduler } from '../util/isScheduler';
 
 const selfSelector = <T>(value: T) => value;
 
@@ -23,7 +22,7 @@ interface SchedulerState<T, S> {
 
 export interface GenerateBaseOptions<S> {
   /**
-   * Inital state.
+   * Initial state.
   */
   initialState: S;
   /**
@@ -37,10 +36,10 @@ export interface GenerateBaseOptions<S> {
    */
   iterate: IterateFunc<S>;
   /**
-   * Scheduler to use for generation process.
+   * IScheduler to use for generation process.
    * By default, a generator starts immediately.
   */
-  scheduler?: Scheduler;
+  scheduler?: IScheduler;
 }
 
 export interface GenerateOptions<T, S> extends GenerateBaseOptions<S> {
@@ -60,7 +59,7 @@ export class GenerateObservable<T, S> extends Observable<T> {
               private condition: ConditionFunc<S>,
               private iterate: IterateFunc<S>,
               private resultSelector: ResultFunc<S, T>,
-              private scheduler?: Scheduler) {
+              private scheduler?: IScheduler) {
       super();
   }
 
@@ -70,40 +69,40 @@ export class GenerateObservable<T, S> extends Observable<T> {
    * to send out observer messages.
    *
    * <img src="./img/generate.png" width="100%">
-   * 
+   *
    * @example <caption>Produces sequence of 0, 1, 2, ... 9, then completes.</caption>
    * var res = Rx.Observable.generate(0, x => x < 10, x => x + 1, x => x);
-   * 
+   *
    * @example <caption>Using asap scheduler, produces sequence of 2, 3, 5, then completes.</caption>
    * var res = Rx.Observable.generate(1, x => x < 5, x => x * 2, x => x + 1, Rx.Scheduler.asap);
    *
    * @see {@link from}
    * @see {@link create}
-   * 
+   *
    * @param {S} initialState Initial state.
    * @param {function (state: S): boolean} condition Condition to terminate generation (upon returning false).
    * @param {function (state: S): S} iterate Iteration step function.
    * @param {function (state: S): T} resultSelector Selector function for results produced in the sequence.
-   * @param {Scheduler} [scheduler] A {@link Scheduler} on which to run the generator loop. If not provided, defaults to emit immediately.
+   * @param {Scheduler} [scheduler] A {@link IScheduler} on which to run the generator loop. If not provided, defaults to emit immediately.
    * @returns {Observable<T>} The generated sequence.
    */
   static create<T, S>(initialState: S,
                       condition: ConditionFunc<S>,
                       iterate: IterateFunc<S>,
                       resultSelector: ResultFunc<S, T>,
-                      scheduler?: Scheduler): Observable<T>
+                      scheduler?: IScheduler): Observable<T>
 
   /**
    * Generates an observable sequence by running a state-driven loop
    * producing the sequence's elements, using the specified scheduler
    * to send out observer messages.
    * The overload uses state as an emitted value.
-   * 
+   *
    * <img src="./img/generate.png" width="100%">
    *
    * @example <caption>Produces sequence of 0, 1, 2, ... 9, then completes.</caption>
    * var res = Rx.Observable.generate(0, x => x < 10, x => x + 1);
-   * 
+   *
    * @example <caption>Using asap scheduler, produces sequence of 1, 2, 4, then completes.</caption>
    * var res = Rx.Observable.generate(1, x => x < 5, x => x * 2, Rx.Scheduler.asap);
    *
@@ -113,21 +112,21 @@ export class GenerateObservable<T, S> extends Observable<T> {
    * @param {S} initialState Initial state.
    * @param {function (state: S): boolean} condition Condition to terminate generation (upon returning false).
    * @param {function (state: S): S} iterate Iteration step function.
-   * @param {Scheduler} [scheduler] A {@link Scheduler} on which to run the generator loop. If not provided, defaults to emit immediately.
+   * @param {Scheduler} [scheduler] A {@link IScheduler} on which to run the generator loop. If not provided, defaults to emit immediately.
    * @returns {Observable<S>} The generated sequence.
    */
   static create<S>(initialState: S,
                    condition: ConditionFunc<S>,
                    iterate: IterateFunc<S>,
-                   scheduler?: Scheduler): Observable<S>
+                   scheduler?: IScheduler): Observable<S>
 
   /**
    * Generates an observable sequence by running a state-driven loop
    * producing the sequence's elements, using the specified scheduler
    * to send out observer messages.
-   * The overload accepts options object that might contain inital state, iterate,
+   * The overload accepts options object that might contain initial state, iterate,
    * condition and scheduler.
-   * 
+   *
    * <img src="./img/generate.png" width="100%">
    *
    * @example <caption>Produces sequence of 0, 1, 2, ... 9, then completes.</caption>
@@ -149,9 +148,9 @@ export class GenerateObservable<T, S> extends Observable<T> {
    * Generates an observable sequence by running a state-driven loop
    * producing the sequence's elements, using the specified scheduler
    * to send out observer messages.
-   * The overload accepts options object that might contain inital state, iterate,
+   * The overload accepts options object that might contain initial state, iterate,
    * condition, result selector and scheduler.
-   * 
+   *
    * <img src="./img/generate.png" width="100%">
    *
    * @example <caption>Produces sequence of 0, 1, 2, ... 9, then completes.</caption>
@@ -173,14 +172,14 @@ export class GenerateObservable<T, S> extends Observable<T> {
   static create<T, S>(initialStateOrOptions: S | GenerateOptions<T, S>,
                       condition?: ConditionFunc<S>,
                       iterate?: IterateFunc<S>,
-                      resultSelectorOrObservable?: (ResultFunc<S, T>) | Scheduler,
-                      scheduler?: Scheduler): Observable<T> {
+                      resultSelectorOrObservable?: (ResultFunc<S, T>) | IScheduler,
+                      scheduler?: IScheduler): Observable<T> {
     if (arguments.length == 1) {
       return new GenerateObservable<T, S>(
         (<GenerateOptions<T, S>>initialStateOrOptions).initialState,
         (<GenerateOptions<T, S>>initialStateOrOptions).condition,
         (<GenerateOptions<T, S>>initialStateOrOptions).iterate,
-        (<GenerateOptions<T, S>>initialStateOrOptions).resultSelector || selfSelector,
+        (<GenerateOptions<T, S>>initialStateOrOptions).resultSelector || selfSelector as ResultFunc<S, T>,
         (<GenerateOptions<T, S>>initialStateOrOptions).scheduler);
     }
 
@@ -189,8 +188,8 @@ export class GenerateObservable<T, S> extends Observable<T> {
         <S>initialStateOrOptions,
         condition,
         iterate,
-        selfSelector,
-        <Scheduler>resultSelectorOrObservable);
+        selfSelector as ResultFunc<S, T>,
+        <IScheduler>resultSelectorOrObservable);
     }
 
     return new GenerateObservable<T, S>(
@@ -198,7 +197,7 @@ export class GenerateObservable<T, S> extends Observable<T> {
       condition,
       iterate,
       <ResultFunc<S, T>>resultSelectorOrObservable,
-      <Scheduler>scheduler);
+      <IScheduler>scheduler);
   }
 
   protected _subscribe(subscriber: Subscriber<any>): Subscription | Function | void {
@@ -234,7 +233,7 @@ export class GenerateObservable<T, S> extends Observable<T> {
         return;
       }
       subscriber.next(value);
-      if (subscriber.isUnsubscribed) {
+      if (subscriber.closed) {
         break;
       }
       try {
@@ -246,9 +245,9 @@ export class GenerateObservable<T, S> extends Observable<T> {
     } while (true);
   }
 
-  private static dispatch<T, S>(state: SchedulerState<T, S>) {
+  private static dispatch<T, S>(state: SchedulerState<T, S>): Subscription | void {
     const { subscriber, condition } = state;
-    if (subscriber.isUnsubscribed) {
+    if (subscriber.closed) {
       return;
     }
     if (state.needIterate) {
@@ -273,7 +272,7 @@ export class GenerateObservable<T, S> extends Observable<T> {
         subscriber.complete();
         return;
       }
-      if (subscriber.isUnsubscribed) {
+      if (subscriber.closed) {
         return;
       }
     }
@@ -284,11 +283,11 @@ export class GenerateObservable<T, S> extends Observable<T> {
       subscriber.error(err);
       return;
     }
-    if (subscriber.isUnsubscribed) {
+    if (subscriber.closed) {
       return;
     }
     subscriber.next(value);
-    if (subscriber.isUnsubscribed) {
+    if (subscriber.closed) {
       return;
     }
     return (<Action<SchedulerState<T, S>>><any>this).schedule(state);

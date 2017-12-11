@@ -16,17 +16,17 @@ var SubjectSubscription = (function (_super) {
         _super.call(this);
         this.subject = subject;
         this.subscriber = subscriber;
-        this.isUnsubscribed = false;
+        this.closed = false;
     }
     SubjectSubscription.prototype.unsubscribe = function () {
-        if (this.isUnsubscribed) {
+        if (this.closed) {
             return;
         }
-        this.isUnsubscribed = true;
+        this.closed = true;
         var subject = this.subject;
         var observers = subject.observers;
         this.subject = null;
-        if (!observers || observers.length === 0 || subject.isStopped || subject.isUnsubscribed) {
+        if (!observers || observers.length === 0 || subject.isStopped || subject.closed) {
             return;
         }
         var subscriberIndex = observers.indexOf(this.subscriber);

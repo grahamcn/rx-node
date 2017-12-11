@@ -1,14 +1,19 @@
-import {Operator} from '../Operator';
-import {Subscriber} from '../Subscriber';
-import {Observable} from '../Observable';
-import {PartialObserver} from '../Observer';
+
+import { Observable } from '../Observable';
+import { PartialObserver } from '../Observer';
+import { tap as higherOrder } from '../operators/tap';
+
+/* tslint:disable:max-line-length */
+export function _do<T>(this: Observable<T>, next: (x: T) => void, error?: (e: any) => void, complete?: () => void): Observable<T>;
+export function _do<T>(this: Observable<T>, observer: PartialObserver<T>): Observable<T>;
+/* tslint:enable:max-line-length */
 
 /**
  * Perform a side effect for every emission on the source Observable, but return
  * an Observable that is identical to the source.
  *
  * <span class="informal">Intercepts each emission on the source and runs a
- * function, but returns an output which is identical to the source.</span>
+ * function, but returns an output which is identical to the source as long as errors don't occur.</span>
  *
  * <img src="./img/do.png" width="100%">
  *
@@ -26,7 +31,7 @@ import {PartialObserver} from '../Observer';
  * Observer will never happen. `do` therefore simply spies on existing
  * execution, it does not trigger an execution to happen like `subscribe` does.
  *
- * @example <caption>Map every every click to the clientX position of that click, while also logging the click event</caption>
+ * @example <caption>Map every click to the clientX position of that click, while also logging the click event</caption>
  * var clicks = Rx.Observable.fromEvent(document, 'click');
  * var positions = clicks
  *   .do(ev => console.log(ev))
@@ -46,76 +51,8 @@ import {PartialObserver} from '../Observer';
  * @name do
  * @owner Observable
  */
-export function _do<T>(nextOrObserver?: PartialObserver<T> | ((x: T) => void),
+export function _do<T>(this: Observable<T>, nextOrObserver?: PartialObserver<T> | ((x: T) => void),
                        error?: (e: any) => void,
                        complete?: () => void): Observable<T> {
-  return this.lift(new DoOperator(nextOrObserver, error, complete));
+  return higherOrder(<any>nextOrObserver, error, complete)(this) as Observable<T>;
 }
-
-export interface DoSignature<T> {
-  (next: (x: T) => void, error?: (e: any) => void, complete?: () => void): Observable<T>;
-  (observer: PartialObserver<T>): Observable<T>;
-}
-
-class DoOperator<T> implements Operator<T, T> {
-  constructor(private nextOrObserver?: PartialObserver<T> | ((x: T) => void),
-              private error?: (e: any) => void,
-              private complete?: () => void) {
-  }
-  call(subscriber: Subscriber<T>, source: any): any {
-    return source._subscribe(new DoSubscriber(subscriber, this.nextOrObserver, this.error, this.complete));
-  }
-}
-
-/**
- * We need this JSDoc comment for affecting ESDoc.
- * @ignore
- * @extends {Ignored}
- */
-class DoSubscriber<T> extends Subscriber<T> {
-
-  private safeSubscriber: Subscriber<T>;
-
-  constructor(destination: Subscriber<T>,
-              nextOrObserver?: PartialObserver<T> | ((x: T) => void),
-              error?: (e: any) => void,
-              complete?: () => void) {
-    super(destination);
-
-    const safeSubscriber = new Subscriber<T>(nextOrObserver, error, complete);
-    safeSubscriber.syncErrorThrowable = true;
-    this.add(safeSubscriber);
-    this.safeSubscriber = safeSubscriber;
-  }
-
-  protected _next(value: T): void {
-    const { safeSubscriber } = this;
-    safeSubscriber.next(value);
-    if (safeSubscriber.syncErrorThrown) {
-      this.destination.error(safeSubscriber.syncErrorValue);
-    } else {
-      this.destination.next(value);
-    }
-  }
-
-  protected _error(err: any): void {
-    const { safeSubscriber } = this;
-    safeSubscriber.error(err);
-    if (safeSubscriber.syncErrorThrown) {
-      this.destination.error(safeSubscriber.syncErrorValue);
-    } else {
-      this.destination.error(err);
-    }
-  }
-
-  protected _complete(): void {
-    const { safeSubscriber } = this;
-    safeSubscriber.complete();
-    if (safeSubscriber.syncErrorThrown) {
-      this.destination.error(safeSubscriber.syncErrorValue);
-    } else {
-      this.destination.complete();
-    }
-  }
-}
-

@@ -1,8 +1,4 @@
-const Rx = require('rx');
-
-Rx.Observable.just('hello!').subscribe(val => {
-  console.log(val);
-});
+const Rx = require('rxjs');
 
 Rx.Observable
   .range(1,5)

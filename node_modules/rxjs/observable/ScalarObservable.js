@@ -31,7 +31,7 @@ var ScalarObservable = (function (_super) {
             return;
         }
         subscriber.next(value);
-        if (subscriber.isUnsubscribed) {
+        if (subscriber.closed) {
             return;
         }
         state.done = true;
@@ -47,7 +47,7 @@ var ScalarObservable = (function (_super) {
         }
         else {
             subscriber.next(value);
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.closed) {
                 subscriber.complete();
             }
         }

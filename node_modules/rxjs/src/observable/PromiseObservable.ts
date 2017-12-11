@@ -1,8 +1,8 @@
-import {root} from '../util/root';
-import {Scheduler} from '../Scheduler';
-import {Observable} from '../Observable';
-import {Subscriber} from '../Subscriber';
-import {TeardownLogic} from '../Subscription';
+import { root } from '../util/root';
+import { IScheduler } from '../Scheduler';
+import { Observable } from '../Observable';
+import { Subscriber } from '../Subscriber';
+import { TeardownLogic } from '../Subscription';
 
 /**
  * We need this JSDoc comment for affecting ESDoc.
@@ -31,19 +31,19 @@ export class PromiseObservable<T> extends Observable<T> {
    * @see {@link bindCallback}
    * @see {@link from}
    *
-   * @param {Promise<T>} promise The promise to be converted.
-   * @param {Scheduler} [scheduler] An optional Scheduler to use for scheduling
+   * @param {PromiseLike<T>} promise The promise to be converted.
+   * @param {Scheduler} [scheduler] An optional IScheduler to use for scheduling
    * the delivery of the resolved value (or the rejection).
    * @return {Observable<T>} An Observable which wraps the Promise.
    * @static true
    * @name fromPromise
    * @owner Observable
    */
-  static create<T>(promise: Promise<T>, scheduler: Scheduler = null): Observable<T> {
+  static create<T>(promise: PromiseLike<T>, scheduler?: IScheduler): Observable<T> {
     return new PromiseObservable(promise, scheduler);
   }
 
-  constructor(private promise: Promise<T>, public scheduler: Scheduler = null) {
+  constructor(private promise: PromiseLike<T>, private scheduler?: IScheduler) {
     super();
   }
 
@@ -53,7 +53,7 @@ export class PromiseObservable<T> extends Observable<T> {
 
     if (scheduler == null) {
       if (this._isScalar) {
-        if (!subscriber.isUnsubscribed) {
+        if (!subscriber.closed) {
           subscriber.next(this.value);
           subscriber.complete();
         }
@@ -62,13 +62,13 @@ export class PromiseObservable<T> extends Observable<T> {
           (value) => {
             this.value = value;
             this._isScalar = true;
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.closed) {
               subscriber.next(value);
               subscriber.complete();
             }
           },
           (err) => {
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.closed) {
               subscriber.error(err);
             }
           }
@@ -80,7 +80,7 @@ export class PromiseObservable<T> extends Observable<T> {
       }
     } else {
       if (this._isScalar) {
-        if (!subscriber.isUnsubscribed) {
+        if (!subscriber.closed) {
           return scheduler.schedule(dispatchNext, 0, { value: this.value, subscriber });
         }
       } else {
@@ -88,12 +88,12 @@ export class PromiseObservable<T> extends Observable<T> {
           (value) => {
             this.value = value;
             this._isScalar = true;
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.closed) {
               subscriber.add(scheduler.schedule(dispatchNext, 0, { value, subscriber }));
             }
           },
           (err) => {
-            if (!subscriber.isUnsubscribed) {
+            if (!subscriber.closed) {
               subscriber.add(scheduler.schedule(dispatchError, 0, { err, subscriber }));
             }
           })
@@ -112,7 +112,7 @@ interface DispatchNextArg<T> {
 }
 function dispatchNext<T>(arg: DispatchNextArg<T>) {
   const { value, subscriber } = arg;
-  if (!subscriber.isUnsubscribed) {
+  if (!subscriber.closed) {
     subscriber.next(value);
     subscriber.complete();
   }
@@ -124,7 +124,7 @@ interface DispatchErrorArg<T> {
 }
 function dispatchError<T>(arg: DispatchErrorArg<T>) {
   const { err, subscriber } = arg;
-  if (!subscriber.isUnsubscribed) {
+  if (!subscriber.closed) {
     subscriber.error(err);
   }
 }
