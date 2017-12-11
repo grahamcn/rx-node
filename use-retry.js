@@ -1,4 +1,4 @@
-require('isomorphic-fetch');
+require('isomorphic-fetch')
 const {Observable} = require('rxjs')
 const {retryStrategy} = require('./retry')
 
@@ -8,7 +8,7 @@ Observable
 		Observable.from(
 			fetch('http://www.swa1pi.co/api/people')
 				.then(res => {
-					return res.json();
+					return res.json()
 				})
 			)
 	)
