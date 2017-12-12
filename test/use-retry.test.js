@@ -12,7 +12,6 @@ function timeRange(start, end, interval = 1000, scheduler = Rx.Scheduler.async) 
 
 describe('test', () => {
 	it('should blah...', () => {
-
 		// let scheduler = new Rx.TestScheduler(chai.assert.deepEqual);
 		// verbose
 		let scheduler = new Rx.TestScheduler((actual, expected) => {
@@ -20,7 +19,11 @@ describe('test', () => {
 			chai.assert.deepEqual(actual, expected)
 	 	});
 
-		let source = timeRange(2, 8, 50, scheduler)
+		let source = timeRange(2, 8, 30, scheduler)
+		let values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8}
+    scheduler.expectObservable(source).toBe('---2--3--4--5--6--7--(8|)', values)
+
+    let source = timeRange(2, 8, 50, scheduler)
 		let values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8}
 		scheduler.expectObservable(source).toBe('-----2----3----4----5----6----7----(8|)', values)
 
