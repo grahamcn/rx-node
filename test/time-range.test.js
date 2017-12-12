@@ -10,7 +10,7 @@ function timeRange(start, end, interval = 1000, scheduler = Rx.Scheduler.async) 
 }
 
 
-describe('test', () => {
+describe('timeRange', () => {
 	it('should blah...', () => {
 		// let scheduler = new Rx.TestScheduler(chai.assert.deepEqual);
     // verbose
